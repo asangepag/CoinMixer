@@ -44,7 +44,7 @@ class RequestProcessor:
         '''
         self.userNameAmountMap[user] = amount ###TODO: save to db for use by mixer
         self.tempDestOrigUserMap[destAddress] = user
-        url = 'http://jobcoin.gemini.com/todo_my_instance/api/transactions'
+        url = 'http://jobcoin.gemini.com/starlit-synergy/api/transactions'
         requestBody = {
             'fromAddress' : user,
             'toAddress' : destAddress,
