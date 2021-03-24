@@ -14,9 +14,9 @@ Note:
 
 
 Testing:
-1. Use test script to test
-2. Run directly and observe logs with dummy data
-3. run directly and observe logs with dummy data
+1. Use requestTester script to test
+2. Run directly and observe logs with dummy data, can also check txns endpoint
+3. run directly and observe logs with dummy data, can also check txns endpoint
 
 
 Installation for MAC OS
