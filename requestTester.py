@@ -19,14 +19,14 @@ def testAnonymize(user, sourceAddresses):
 def sendMoneyToTempAccount(user, destAddress, amount):
     reqBody = {
         'user' : user,
-        'destAdddress': destAddress,
-        'amount' : str(amount)
+        'destinationAddress': destAddress,
+        'amount' : amount
     }
     url = URL + '/sendCoinsToDestAddress'
     print(url)
     r = requests.post(url, data=reqBody)
     if r.status_code == 200:
-        print('success')
+        print(r.json())
     else:
         print('fail')
         print(r.status_code)
@@ -43,6 +43,6 @@ def getAllTranscations():
         print(e)
 
 if __name__ == '__main__':
-    #testAnonymize('Siri', 'Biri')
-    sendMoneyToTempAccount('Siri', 'tempDest314', 500)
+    #testAnonymize('Siri', 'Biri12,Biri14')
+    sendMoneyToTempAccount('Bob', 'tempDest314', 2)  ### please pick someone with monies :)
 
