@@ -1,40 +1,54 @@
-import logging
-import datetime
+
+'''
+This part with interface with the user to get the source addresess + send them to a temp account
+Would use tornado in real world example to handle request volume
+'''
+
 from flask import Flask
-from flask import request
+from flask_classful import FlaskView, route
 from collections import defaultdict
 import requests
 import random
+import logging
+import datetime
 
 app = Flask(__name__)
 
 
-class RequestProcessor:
+class RequestProcessor(FlaskView):
+
     def __init__(self):
         self.addresses = []
         self.userNameAddressMap = defaultdict(list)
         self.userNameAmountMap = {}
-        self.tempDestOrigUserMap = {}
+        self.URL = 'http://jobcoin.gemini.com/starlit-synergy/api/transactions'
+        #self.app = Flask(name)
+
 
     def getTempDestinationAddress(self):
-        r = random.randint()
+        '''
+        will return an address like tempDest1, tempDest2 etc
+        '''
+        r = random.randomint(1, 1000) ### fix for real usecases, test range
         tempDestAddress = 'tempDest' + str(r)
         return tempDestAddress
 
-    @app.route('/anonymize/<user>/<sourceAddresses>', methods=['GET'])
-    def anonymize(self, user, sourceAddresses):
+    @route('/anonymize/<origAddress>/<sourceAddresses>', methods=['GET'])
+    def anonymize(self, origAddress, sourceAddresses):
         '''
-        @param user: string, original user
+        @param origAddress: string, original user
         @param sourceAddresses: list of unused addresses user has
         returns address to deposit amount
         '''
-        self.userNameAddressMap[user].extend(sourceAddresses)
-        tempDestAddress = self.getTempDestAddress()
+        self.userNameAddressMap[origAddress].extend(sourceAddresses)
+        tempDestAddress = self.getTempDestinationAddress()
         return {
-            'sourceUser' : user,
-            'tempDestAddress': tempDestAddress}
+            'origAddress': origAddress,
+            'tempDestAddress': tempDestAddress
+        }
 
-    @app.route('/processDeposit', methods=['POST'])
+
+    @route('/sendCoinsToDestAddress', methods=['POST'])
     def sendCoinsToDestAddress(self, user, destAddress, amount):
         '''
         @param user: string, original user
@@ -43,18 +57,29 @@ class RequestProcessor:
         returns None
         '''
         self.userNameAmountMap[user] = amount ###TODO: save to db for use by mixer
-        self.tempDestOrigUserMap[destAddress] = user
-        url = 'http://jobcoin.gemini.com/starlit-synergy/api/transactions'
+
         requestBody = {
             'fromAddress' : user,
             'toAddress' : destAddress,
-            'amount' : str(amount)
+            'amount' : amount
         }
-        requests.post(url, data=requestBody)
+        requests.post(self.URL, data=requestBody)
 
+    '''
+    def run(self):
+        self.register(self.app, route_base='/')
+        self.app.run(debug=True)
+    '''
+
+RequestProcessor.register(app, route_base='/')
 
 if __name__ == '__main__':
-    app.run(debug=True)
-  
-  
-  
+  app.run(debug=True)
+
+'''
+def main():
+    reqProcessor = RequestProcessor('req')
+    reqProcessor.run()
+'''
+
+
