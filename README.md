@@ -10,11 +10,12 @@ Note:
  Twisted works well with the udpates coming from message queues.
 
 2. Components don't talk to each other now.
-3. Need to add test cases
+3. Need to add test cases, only added 1, but didn't get a chance to test imports and verify.
+
 
 
 Testing:
-1. Use requestTester script to test
+1. Use requestTester script to test endpoints
 2. Run directly and observe logs with dummy data, can also check txns endpoint
 3. run directly and observe logs with dummy data, can also check txns endpoint
 
