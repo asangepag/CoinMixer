@@ -16,50 +16,52 @@ class Mixer:
         reactor.callInThread(self.checkForUpdates, reactor)
 
     def getUserSourceAddressMap(self):
-        '''
+        """
         reads from where this info is stored by requestProcessor
         dummying for test purposes
-        '''
+        """
         return {
             'Alice': ['Alice1', 'Alice2', 'Alice3'],
             'Bob': ['Bob1', 'Bob2', 'Bob3']
         }
 
     def tempDestToOrigUserMap(self):
-        '''
+        """
         reads from where this info is stored by requestProcessor
         dummying for test purposes
-        '''
+        """
         return {
             'tempDest1': 'Alice',
             'tempDest2': 'Bob'
         }
 
+    def getOriginalSourceAndSplits(self, reactor, txn):
+        print(txn)
+        tempDest = txn['fromAddress']
+        origUser = self.tempDestToOrigUserMap.get(tempDest, None)
+        print(f'Original User is {origUser}')
+        if not origUser:
+            logging.info('Original User not Found')
+            return None, None
+        sourceAddresses = self.userSourceAddressMap.get(origUser, None)
+        print(f'Source Addresses are {sourceAddresses}')
+        if not sourceAddresses:
+            logging.info(('Source Addresses not found'))
+            return None, None
+        amount = int(txn['amount'])
+        splits = amount/len(sourceAddresses)
+        return sourceAddresses, splits
 
 
     def transferToOriginalAccounts(self, reactor, currTxns):
-        '''
+        """
         get sourceUser and corr sourceAddress
         amount  /= number of sourceaddress
         use jobcoin api to send money from house account to source address
-        '''
+        """
         print('transferring to orig accounts')
         for txn in currTxns:
-            tempDest = txn['fromAddress']
-            origUser = self.tempDestToOrigUserMap.get(tempDest, None)
-            print(f'Original User is {origUser}')
-            if not origUser:
-                logging.info('original User not found')
-                return
-            sourceAddresses = self.userSourceAddressMap.get(origUser, None)
-            print(f'Source Addreses: {sourceAddresses}')
-            if not sourceAddresses:
-                logging.info('Original User not found')
-                return
-
-            amount = int(txn['amount'])
-            splits = amount / len(sourceAddresses)
-
+            sourceAddresses, splits = self.getOriginalSourceAndSplits(reactor, txn)
             for sa in sourceAddresses:
                 reqBody = {
                     'fromAddress': self.houseAccountAddress,
@@ -132,5 +134,6 @@ if __name__ ==  '__main__':
     from twisted.internet import reactor
     m = Mixer()
     m.start(reactor)
+
 
 
