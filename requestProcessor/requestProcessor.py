@@ -1,9 +1,4 @@
 
-'''
-This part with interface with the user to get the source addresess + send them to a temp account
-Would use tornado in real world example to handle request volume
-'''
-
 from flask import Flask
 from flask_classful import FlaskView, route
 from collections import defaultdict
@@ -26,10 +21,7 @@ class RequestProcessor(FlaskView):
 
 
     def getTempDestinationAddress(self):
-        '''
-        will return an address like tempDest1, tempDest2 etc
-        '''
-        r = random.randomint(1, 1000) ### fix for real usecases, test range
+        r = random.randint(1, 1000) ### fix for real usecases, test range
         tempDestAddress = 'tempDest' + str(r)
         return tempDestAddress
 
@@ -40,7 +32,9 @@ class RequestProcessor(FlaskView):
         @param sourceAddresses: list of unused addresses user has
         returns address to deposit amount
         '''
+        sourceAddresses = sourceAddresses.split(',')
         self.userNameAddressMap[origAddress].extend(sourceAddresses)
+        print(self.userNameAddressMap)
         tempDestAddress = self.getTempDestinationAddress()
         return {
             'origAddress': origAddress,
@@ -49,21 +43,27 @@ class RequestProcessor(FlaskView):
 
 
     @route('/sendCoinsToDestAddress', methods=['POST'])
-    def sendCoinsToDestAddress(self, user, destAddress, amount):
+    def sendCoinsToDestAddress(self):
         '''
         @param user: string, original user
-        @param destAddress: string, temporary Destination address
+        @param destinationAddress: string, temporary Destination address
         @param amount: float ,amount user wishes to deposit
         returns None
         '''
-        self.userNameAmountMap[user] = amount ###TODO: save to db for use by mixer
 
+        from flask import request
+        user = request.form['user']
+        destAddress = request.form['destinationAddress']
+        amount = request.form['amount']
+        self.userNameAmountMap[user] = amount  ###TODO: save to db for use by mixer
         requestBody = {
             'fromAddress' : user,
             'toAddress' : destAddress,
-            'amount' : amount
+            'amount' : str(amount),
         }
-        requests.post(self.URL, data=requestBody)
+        #print(requestBody, self.URL)
+        resp = requests.post(self.URL, data=requestBody)
+        return {'status': resp.status_code}
 
     '''
     def run(self):
